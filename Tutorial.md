@@ -19,14 +19,14 @@ For example, multiple pages could be shown in one formspec.
 
 ## Registering a Page
 
-SFINV provides the aptly named `sfinv.register_page` function to create pages.
+SFINV provides the aptly named `sfs.register_page` function to create pages.
 Simply call the function with the page's name and its definition:
 
 ```lua
-sfinv.register_page("mymod:hello", {
+sfs.register_page("mymod:hello", {
     title = "Hello!",
     get = function(self, player, context)
-        return sfinv.make_formspec(player, context,
+        return sfs.make_formspec(player, context,
                 "label[0.1,0.1;Hello world!]", true)
     end
 })
@@ -41,7 +41,7 @@ part of a player admin tab. This tab will allow admins to kick or ban players by
 selecting them in a list and clicking a button.
 
 ```lua
-sfinv.register_page("myadmin:myadmin", {
+sfs.register_page("myadmin:myadmin", {
     title = "Tab",
     get = function(self, player, context)
         local players = {}
@@ -70,9 +70,9 @@ sfinv.register_page("myadmin:myadmin", {
         formspec[#formspec + 1] = "button[0.1,3.3;2,1;kick;Kick]"
         formspec[#formspec + 1] = "button[2.1,3.3;2,1;ban;Kick + Ban]"
 
-        -- Wrap the formspec in sfinv's layout
+        -- Wrap the formspec in sfs's layout
         -- (ie: adds the tabs and background)
-        return sfinv.make_formspec(player, context,
+        return sfs.make_formspec(player, context,
                 table.concat(formspec, ""), false)
     end,
 })
@@ -84,7 +84,7 @@ covered above and in previous chapters.
 ## Receiving events
 
 You can receive formspec events by adding a `on_player_receive_fields` function
-to a sfinv definition.
+to a sfs definition.
 
 ```lua
 on_player_receive_fields = function(self, player, context, fields)
@@ -171,12 +171,12 @@ local function on_grant_revoke(grantee, granter, priv)
         return
     end
 
-    local context = sfinv.get_or_create_context(player)
+    local context = sfs.get_or_create_context(player)
     if context.page ~= "myadmin:myadmin" then
         return
     end
 
-    sfinv.set_player_inventory_formspec(player, context)
+    sfs.set_player_inventory_formspec(player, context)
 end
 
 minetest.register_on_priv_grant(on_grant_revoke)
@@ -214,8 +214,8 @@ To add content to an existing page, you will need to override the page
 and modify the returned formspec.
 
 ```lua
-local old_func = sfinv.registered_pages["sfinv:crafting"].get
-sfinv.override_page("sfinv:crafting", {
+local old_func = sfs.registered_pages["sfs:crafting"].get
+sfs.override_page("sfs:crafting", {
     get = function(self, player, context, ...)
         local ret = old_func(self, player, context, ...)
 

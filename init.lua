@@ -1,19 +1,28 @@
--- sfinv/init.lua
+-- sfs/init.lua
 
-dofile(minetest.get_modpath("sfinv") .. "/api.lua")
+local sfs = dofile(minetest.get_modpath("sfs") .. "/api.lua")
 
--- Load support for MT game translation.
-local S = minetest.get_translator("sfinv")
+local template_pagename = "sfs:template"
 
-sfinv.register_page("sfinv:crafting", {
-	title = S("Crafting"),
+sfs.register_page(template_pagename, {
+	title = "Template",
 	get = function(self, player, context)
-		return sfinv.make_formspec(player, context, [[
-				list[current_player;craft;1.75,0.5;3,3;]
-				list[current_player;craftpreview;5.75,1.5;1,1;]
-				image[4.75,1.5;1,1;sfinv_crafting_arrow.png]
-				listring[current_player;main]
-				listring[current_player;craft]
+		return sfs.make_formspec(player, context, [[
+				label[0.1,0.1;SFs Template]
+        button_exit[6,0.1;1.8,1.8;btn_exit;Exit]
 			]], true)
 	end
+})
+
+
+minetest.register_chatcommand("sfs", {
+  description = "Template chat command for sfs",
+  privs = {interact = true},
+  params = "",
+  func = function(player_name)
+    local player = minetest.get_player_by_name(player_name)
+    if player then
+      sfs.set_page(player, template_pagename)
+    end
+  end
 })

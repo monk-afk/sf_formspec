@@ -1,50 +1,54 @@
-# Simple Fast Inventory
+# Simple Formspec
 
-![SFINV Screeny](screenshot.png)
+![SFs Screenshot](screenshot.png)
 
 A cleaner, simpler solution to having an advanced inventory in Minetest.
 
-Written by rubenwardy.\\
-License: MIT
+Originally Written by rubenwardy as sfinv.
 
-* sfinv_crafting_arrow.png - by paramat, derived from a texture by BlockMen (CC BY-SA 3.0).
+License: MIT
 
 ## API
 
-It is recommended that you read this link for a good introduction to the sfinv API
+It is recommended that you read this link for a good introduction to the sfs API
 by its author: https://rubenwardy.com/minetest_modding_book/en/players/sfinv.html
 
-### sfinv Methods
+This modified sfinv mod does not use a global table for callbacks, and internalizes some functions within the API. 
+
+SFs also does not use the player inventory formspec, instead it uses the minetest.show_formspec callback.
+
+It is meant to be an embedded framework for other mods using formspec, but if needed it could be modified to use globally. 
+
+### sfs Methods
 
 **Pages**
 
-* sfinv.set_page(player, pagename) - changes the page
-* sfinv.get_homepage_name(player) - get the page name of the first page to show to a player
-* sfinv.register_page(name, def) - register a page, see section below
-* sfinv.override_page(name, def) - overrides fields of an page registered with register_page.
+* sfs.set_page(player, pagename) - changes the page
+* get_homepage_name(player) - get the page name of the first page to show to a player
+* sfs.register_page(name, def) - register a page, see section below
+* sfs.override_page(name, def) - overrides fields of an page registered with register_page.
     * Note: Page must already be defined, (opt)depend on the mod defining it.
-* sfinv.set_player_inventory_formspec(player) - (re)builds page formspec
-             and calls set_inventory_formspec().
-* sfinv.get_formspec(player, context) - builds current page's formspec
+* sfs.show_player_formspec(player) - (re)builds page formspec
+             and calls minetest.show_formspec().
+* sfs.get_formspec(player, context) - builds current page's formspec
 
 **Contexts**
 
-* sfinv.get_or_create_context(player) - gets the player's context
-* sfinv.set_context(player, context)
+* sfs.get_or_create_context(player) - gets the player's context
+* sfs.set_context(player, context)
 
 **Theming**
 
-* sfinv.make_formspec(player, context, content, show_inv, size) - adds a theme to a formspec
+* sfs.make_formspec(player, context, content, show_inv, size) - adds a theme to a formspec
     * show_inv, defaults to false. Whether to show the player's main inventory
     * size, defaults to `size[8,8.6]` if not specified
-* sfinv.get_nav_fs(player, context, nav, current_idx) - creates tabheader or ""
+* get_nav_fs(player, context, nav, current_idx) - creates tabheader or ""
 
-### sfinv Members
+### sfs Members
 
 * pages - table of pages[pagename] = def
 * pages_unordered - array table of pages in order of addition (used to build navigation tabs).
 * contexts - contexts[playername] = player_context
-* enabled - set to false to disable. Good for inventory rehaul mods like unified inventory
 
 ### Context
 
@@ -55,11 +59,11 @@ A table with these keys:
 * nav_titles - a list of page titles
 * nav_idx - current nav index (in nav and nav_titles)
 * any thing you want to store
-    * sfinv will clear the stored data on log out / log in
+    * sfs will clear the stored data on log out / log in
 
-### sfinv.register_page
+### sfs.register_page
 
-sfinv.register_page(name, def)
+sfs.register_page(name, def)
 
 def is a table containing:
 
@@ -72,9 +76,9 @@ def is a table containing:
 
 ### get formspec
 
-Use sfinv.make_formspec to apply a layout:
+Use sfs.make_formspec to apply a layout:
 
-	return sfinv.make_formspec(player, context, [[
+	return sfs.make_formspec(player, context, [[
 		list[current_player;craft;1.75,0.5;3,3;]
 		list[current_player;craftpreview;5.75,1.5;1,1;]
 		image[4.75,1.5;1,1;gui_furnace_arrow_bg.png^[transformR270]
@@ -94,23 +98,17 @@ See above (methods section) for more options.
 
 ### Customising themes
 
-Simply override this function to change the navigation:
+local function get_nav_fs(player, context, nav, current_idx)
+  -- Only show tabs if there is more than one page
+  if #nav > 1 then
+    return "tabheader[0,0;sfs_nav_tabs;" .. table.concat(nav, ",") ..
+        ";" .. current_idx .. ";true;false]"
+  else
+    return ""
+  end
+end
 
-	function sfinv.get_nav_fs(player, context, nav, current_idx)
-		return "navformspec"
-	end
-
-And override this function to change the layout:
-
-	function sfinv.make_formspec(player, context, content, show_inv, size)
-		local tmp = {
-			size or "size[8,8.6]",
-			theme_main,
-			sfinv.get_nav_fs(player, context, context.nav_titles, context.nav_idx),
-			content
-		}
-		if show_inv then
-			tmp[4] = theme_inv
-		end
-		return table.concat(tmp, "")
-	end
+local theme_inv = [[
+    list[current_player;main;0,5.2;8,1;]
+    list[current_player;main;0,6.35;8,3;8]
+  ]]
