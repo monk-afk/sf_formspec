@@ -1,12 +1,13 @@
-# SFINV Tutorial
+# SFS Tutorial
 
 ## Introduction <!-- omit in toc -->
 
-Simple Fast Inventory (SFINV) is a mod found in Minetest Game that is used to
-create the player's inventory formspec. SFINV comes with
-an API that allows you to add and otherwise manage the pages shown.
+Simple Fast Formspec (SFS) is a formspec framework based on the Simple Fast 
+Inventory (SFINV) mod found in Minetest Game.
+SFS comes with an API that allows you to add and otherwise manage the pages 
+shown.
 
-Whilst SFINV by default shows pages as tabs, pages are called pages
+Whilst SFS by default shows pages as tabs, pages are called pages
 because it is entirely possible that a mod or game decides to show them in
 some other format instead.
 For example, multiple pages could be shown in one formspec.
@@ -19,7 +20,7 @@ For example, multiple pages could be shown in one formspec.
 
 ## Registering a Page
 
-SFINV provides the aptly named `sfs.register_page` function to create pages.
+SFS provides the aptly named `sfs.register_page` function to create pages.
 Simply call the function with the page's name and its definition:
 
 ```lua
@@ -32,7 +33,7 @@ sfs.register_page("mymod:hello", {
 })
 ```
 
-The `make_formspec` function surrounds your formspec with SFINV's formspec code.
+The `make_formspec` function surrounds your formspec with SFS's formspec code.
 The fourth parameter, currently set as `true`, determines whether the
 player's inventory is shown.
 
@@ -95,7 +96,7 @@ end,
 `on_player_receive_fields` works the same as
 `minetest.register_on_player_receive_fields`, except that `context` is
 given instead of `formname`.
-Please note that SFINV will consume events relevant to itself, such as
+Please note that SFS will consume events relevant to itself, such as
 navigation tab events, so you won't receive them in this callback.
 
 Now let's implement the `on_player_receive_fields` for our admin mod:
@@ -135,7 +136,7 @@ end,
 
 There's a rather large problem with this, however. Anyone can kick or ban players! You
 need a way to only show this to players with the kick or ban privileges.
-Luckily SFINV allows you to do this!
+Luckily SFS allows you to do this!
 
 ## Conditionally showing to players
 
@@ -154,9 +155,9 @@ If you only need to check one priv or want to perform an 'and', you should use
 
 Note that the `is_in_nav` is only called when the player's inventory formspec is
 generated. This happens when a player joins the game, switches tabs, or a mod
-requests for SFINV to regenerate.
+requests for SFS to regenerate.
 
-This means that you need to manually request that SFINV regenerates the inventory
+This means that you need to manually request that SFS regenerates the inventory
 formspec on any events that may change `is_in_nav`'s result. In our case,
 we need to do that whenever kick or ban is granted or revoked to a player:
 
@@ -214,19 +215,27 @@ To add content to an existing page, you will need to override the page
 and modify the returned formspec.
 
 ```lua
-local old_func = sfs.registered_pages["sfs:crafting"].get
-sfs.override_page("sfs:crafting", {
-    get = function(self, player, context, ...)
-        local ret = old_func(self, player, context, ...)
+local old_page_func = sfs.pages["sfs:template"].get
+local old_page_receive_fields = sfs.pages["sfs:template"].on_player_receive_fields
 
-        if type(ret) == "table" then
-            ret.formspec = ret.formspec .. "label[0,0;Hello]"
-        else
-            -- Backwards compatibility
-            ret = ret .. "label[0,0;Hello]"
-        end
+sfs.override_page("sfs:template", {
+  get = function(self, player, context, ...)
+    local ret = old_page_func(self, player, context, ...)
 
-        return ret
+      -- some functions to add to formspec
+    if core.is_creative_enabled(name) then
+      ret = ret .. "label[0,1;Creative]"
     end
+      -- return 'ret'
+    return ret .. "label[0,0;Hello]"
+  end,
+
+  on_player_receive_fields = function(self, player, context, fields)
+    if fields.online then
+      -- some functions
+    end
+
+    return old_page_receive_fields(self, player, context, fields)
+  end
 })
 ```

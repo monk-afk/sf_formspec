@@ -81,7 +81,7 @@ local function get_formspec(player, context)
     local home_page = get_homepage_name(player)
 
     if old_page == home_page then
-      minetest.log("error", "[sfs] Couldn't find " .. dump(old_page) ..
+      core.log("error", "[sfs] Couldn't find " .. dump(old_page) ..
           ", which is also the old page")
 
       return ""
@@ -89,7 +89,7 @@ local function get_formspec(player, context)
 
     context.page = home_page
     assert(sfs.pages[context.page], "[sfs] Invalid homepage")
-    minetest.log("warning", "[sfs] Couldn't find " .. dump(old_page) ..
+    core.log("warning", "[sfs] Couldn't find " .. dump(old_page) ..
         " so switching to homepage")
 
     return get_formspec(player, context)
@@ -115,7 +115,7 @@ end
 function sfs.show_player_formspec(player, context)
   local fs = get_formspec(player,
       context or sfs.get_or_create_context(player))
-  minetest.after(0.1, minetest.show_formspec,
+  core.after(0.1, core.show_formspec,
       player:get_player_name(), context.page, fs)
 end
 
@@ -138,15 +138,15 @@ function sfs.get_page(player)
   return context and context.page or get_homepage_name(player)
 end
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
   sfs.get_or_create_context(player)
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
   sfs.contexts[player:get_player_name()] = nil
 end)
 
-minetest.register_on_player_receive_fields(function(player, formname, fields)
+core.register_on_player_receive_fields(function(player, formname, fields)
   if not sfs.pages[formname] then
     return false
   end
