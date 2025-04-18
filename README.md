@@ -2,7 +2,7 @@
 
 ![SFs Screenshot](screenshot.png)
 
-A cleaner, simpler solution to having an advanced inventory in Minetest.
+A Formspec framework based on sfinv.
 
 Originally Written by rubenwardy as sfinv.
 
@@ -11,13 +11,11 @@ License: MIT
 ## API
 
 It is recommended that you read this link for a good introduction to the sfs API
-by its author: https://rubenwardy.com/minetest_modding_book/en/players/sfinv.html
+by its author: https://rubenwardy.com/core_modding_book/en/players/sfinv.html
 
-This modified sfinv mod does not use a global table for callbacks, and internalizes some functions within the API. 
+This modified sfinv mod does not register into the global namespace.
 
-SFs also does not use the player inventory formspec, instead it uses the minetest.show_formspec callback.
-
-It is meant to be an embedded framework for other mods using formspec, but if needed it could be modified to use globally. 
+It also does not use the player inventory formspec.
 
 ### sfs Methods
 
@@ -29,7 +27,7 @@ It is meant to be an embedded framework for other mods using formspec, but if ne
 * sfs.override_page(name, def) - overrides fields of an page registered with register_page.
     * Note: Page must already be defined, (opt)depend on the mod defining it.
 * sfs.show_player_formspec(player) - (re)builds page formspec
-             and calls minetest.show_formspec().
+             and calls core.show_formspec().
 * sfs.get_formspec(player, context) - builds current page's formspec
 
 **Contexts**
